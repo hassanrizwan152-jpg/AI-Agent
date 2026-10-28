@@ -2,10 +2,21 @@ import json
 import os
 
 import streamlit as st
-from google import genai
-from google.genai import types
 
 st.set_page_config(page_title="Decision Duel", page_icon="⚔️", layout="wide")
+
+try:
+    from google import genai
+    from google.genai import types
+except ImportError as e:
+    st.error(
+        "google-genai library install nahi hai.\n\n"
+        "Local: `pip install --upgrade google-genai`\n\n"
+        "Streamlit Cloud: requirements.txt repo ke root mein hona chahiye "
+        "aur usmein `google-genai` likha ho. Phir app ko Reboot karo.\n\n"
+        f"Asal error: {e}"
+    )
+    st.stop()
 
 # ---------- API key handling ----------
 def get_api_key():
