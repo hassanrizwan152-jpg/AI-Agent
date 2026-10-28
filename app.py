@@ -20,14 +20,8 @@ def get_api_key():
 with st.sidebar:
     st.header("⚙️ Settings")
     api_key = get_api_key() or st.text_input("Gemini API Key", type="password")
-    model_choice = st.selectbox(
-        "Gemini model",
-        ["gemini-3.1-pro-preview", "gemini-2.5-pro", "Custom (type model ID)"],
-    )
-    if model_choice.startswith("Custom"):
-        model_name = st.text_input("Model ID", placeholder="e.g. gemini-3.5-pro")
-    else:
-        model_name = model_choice
+    model_name = "gemini-2.5-pro"
+    st.caption(f"Model: {model_name}")
     tone = st.radio("Debate tone", ["Serious", "Funny", "Brutally honest"])
     st.caption("Get a free key at aistudio.google.com")
 
