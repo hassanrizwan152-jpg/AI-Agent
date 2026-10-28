@@ -20,10 +20,14 @@ def get_api_key():
 with st.sidebar:
     st.header("⚙️ Settings")
     api_key = get_api_key() or st.text_input("Gemini API Key", type="password")
-    model_name = st.selectbox(
+    model_choice = st.selectbox(
         "Gemini model",
-        ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"],
+        ["gemini-3.1-pro-preview", "gemini-2.5-pro", "Custom (type model ID)"],
     )
+    if model_choice.startswith("Custom"):
+        model_name = st.text_input("Model ID", placeholder="e.g. gemini-3.5-pro")
+    else:
+        model_name = model_choice
     tone = st.radio("Debate tone", ["Serious", "Funny", "Brutally honest"])
     st.caption("Get a free key at aistudio.google.com")
 
@@ -31,7 +35,7 @@ with st.sidebar:
 def ask(client, system, prompt, as_json=False):
     config = types.GenerateContentConfig(
         system_instruction=system,
-        temperature=0.9,
+        temperature=1.0,
         response_mime_type="application/json" if as_json else "text/plain",
     )
     resp = client.models.generate_content(
@@ -65,11 +69,16 @@ decision = st.text_area(
     placeholder="Should I quit my job to build a startup?",
     height=100,
 )
-context = st.text_input("Any extra context? (optional)", placeholder="I have 6 months of savings")
+context = st.text_input(
+    "Any extra context? (optional)", placeholder="I have 6 months of savings"
+)
 
 if st.button("Start the duel 🥊", type="primary"):
     if not api_key:
         st.error("Add your Gemini API key in the sidebar or secrets.")
+        st.stop()
+    if not model_name.strip():
+        st.warning("Enter a model ID in the sidebar.")
         st.stop()
     if not decision.strip():
         st.warning("Write a decision first.")
@@ -103,7 +112,10 @@ if st.button("Start the duel 🥊", type="primary"):
         st.subheader("⚖️ The Judge's Verdict")
         st.success(f"Winner: **{result['winner']}**")
         st.write(result["verdict"])
-        st.progress(int(result["confidence"]) / 100, text=f"Confidence it's a good idea: {result['confidence']}%")
+        st.progress(
+            min(max(int(result["confidence"]), 0), 100) / 100,
+            text=f"Confidence it's a good idea: {result['confidence']}%",
+        )
 
         st.subheader("📅 Your 7-Day Action Plan")
         for i, step in enumerate(result["action_plan"], 1):
